@@ -1,0 +1,28 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+#time {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+#weather {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+#image-display img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
