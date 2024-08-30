@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - TV Indoor</title>
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <h1>Painel de Administração</h1>
+    <form id="image-upload-form">
+        <label for="weather-condition">Condição Climática:</label>
+        <select id="weather-condition">
+            <option value="Clear">Céu Limpo</option>
+            <option value="Clouds">Nublado</option>
+            <option value="Rain">Chuva</option>
+            <option value="Snow">Neve</option>
+            <option value="Default">Padrão</option>
+        </select>
+        <label for="image-upload">Escolha uma imagem:</label>
+        <input type="file" id="image-upload" accept="image/*">
+        <button type="submit">Upload</button>
+    </form>
+    <div id="upload-status"></div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
