@@ -6,8 +6,8 @@ function updateTime() {
 }
 
 function fetchWeather() {
-    const apiKey = 'SUA_API_KEY';
-    const city = 'SUA_CIDADE';
+    const apiKey = 'b5909a832e37482aa03171115243008';
+    const city = 'Sorocaba';
     const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&lang=pt`;
 
     fetch(url)
