@@ -23,26 +23,13 @@ function fetchWeather() {
 
 function updateImageBasedOnWeather(weatherCondition) {
     const imageDisplay = document.getElementById('image-display');
-    let imageUrl = '';
+    const imageUrl = localStorage.getItem(`image-${weatherCondition}`);
 
-    switch (weatherCondition) {
-        case 'Clear':
-            imageUrl = 'images/clear.jpg';
-            break;
-        case 'Clouds':
-            imageUrl = 'images/clouds.jpg';
-            break;
-        case 'Rain':
-            imageUrl = 'images/rain.jpg';
-            break;
-        case 'Snow':
-            imageUrl = 'images/snow.jpg';
-            break;
-        default:
-            imageUrl = 'images/default.jpg';
+    if (imageUrl) {
+        imageDisplay.innerHTML = `<img src="${imageUrl}" alt="Clima">`;
+    } else {
+        imageDisplay.innerHTML = `<img src="images/default.jpg" alt="Clima">`;
     }
-
-    imageDisplay.innerHTML = `<img src="${imageUrl}" alt="Clima">`;
 }
 
 setInterval(updateTime, 1000);
