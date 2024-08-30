@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin TV Seareiros</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,23 +72,46 @@
             margin-bottom: 10px;
             border-radius: 4px;
         }
+
+        .marquee-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #007bff;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .marquee-text {
+            font-size: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
     <div class="form-container">
         <h1>Admin Panel</h1>
 
-        <form id="marquee-form" onsubmit="return updateMarquee()">
-            <div class="form-group">
-                <label for="marquee-text">Update Marquee Text:</label>
-                <input type="text" id="marquee-text" placeholder="Enter new marquee text">
+        <div class="marquee-container">
+            <div class="marquee-text" id="marquee-display"></div>
+            <div id="marquee-controls">
+                <form id="marquee-form" onsubmit="return updateMarquee()">
+                    <div class="form-group">
+                        <label for="marquee-text">Update Marquee Text:</label>
+                        <input type="text" id="marquee-text" placeholder="Enter new marquee text">
+                    </div>
+                    <input type="submit" value="Update Marquee">
+                </form>
             </div>
-            <input type="submit" value="Update Marquee">
-        </form>
+        </div>
 
         <form id="image-form" onsubmit="return uploadImage()">
             <div class="form-group">
-                <label for="image-upload">Upload Image (Max 20):</label>
+                <label for="image-upload">Suba a imnagem(Max 20):</label>
                 <input type="file" id="image-upload" accept="image/*">
             </div>
             <input type="submit" value="Upload Image">
@@ -110,6 +133,7 @@
             }
             document.getElementById("marquee-text").value = '';
             localStorage.setItem('marquee', marqueeText);
+            document.getElementById("marquee-display").textContent = marqueeText;
             alert('Marquee text updated!');
             return false;
         }
@@ -151,6 +175,7 @@
         window.onload = function() {
             const storedMarquee = localStorage.getItem('marquee');
             if (storedMarquee) {
+                document.getElementById("marquee-display").textContent = storedMarquee;
                 document.getElementById("marquee-text").value = storedMarquee;
             }
 
