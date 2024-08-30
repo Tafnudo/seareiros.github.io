@@ -8,10 +8,22 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
         h1 {
             text-align: center;
+            color: #007bff;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            max-width: 600px;
         }
 
         .form-group {
@@ -21,51 +33,70 @@
         label {
             display: block;
             margin-bottom: 5px;
+            font-weight: bold;
         }
 
         input[type="text"],
         input[type="file"] {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             box-sizing: border-box;
         }
 
         input[type="submit"] {
-            padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .image-list {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
         }
 
         .image-list img {
             max-width: 100px;
             margin-right: 10px;
             margin-bottom: 10px;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Admin Panel</h1>
+    <div class="form-container">
+        <h1>Admin Panel</h1>
 
-    <form id="marquee-form" onsubmit="return updateMarquee()">
-        <div class="form-group">
-            <label for="marquee-text">Update Marquee Text:</label>
-            <input type="text" id="marquee-text" placeholder="Enter new marquee text">
+        <form id="marquee-form" onsubmit="return updateMarquee()">
+            <div class="form-group">
+                <label for="marquee-text">Update Marquee Text:</label>
+                <input type="text" id="marquee-text" placeholder="Enter new marquee text">
+            </div>
+            <input type="submit" value="Update Marquee">
+        </form>
+
+        <form id="image-form" onsubmit="return uploadImage()">
+            <div class="form-group">
+                <label for="image-upload">Upload Image (Max 20):</label>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+            <input type="submit" value="Upload Image">
+        </form>
+
+        <div class="image-list" id="image-list">
+            <!-- Uploaded images will be displayed here -->
         </div>
-        <input type="submit" value="Update Marquee">
-    </form>
-
-    <form id="image-form" onsubmit="return uploadImage()">
-        <div class="form-group">
-            <label for="image-upload">Upload Image (Max 20):</label>
-            <input type="file" id="image-upload" accept="image/*">
-        </div>
-        <input type="submit" value="Upload Image">
-    </form>
-
-    <div class="image-list" id="image-list">
-        <!-- Uploaded images will be displayed here -->
     </div>
 
     <script>
@@ -73,6 +104,10 @@
 
         function updateMarquee() {
             const marqueeText = document.getElementById("marquee-text").value;
+            if (marqueeText.trim() === '') {
+                alert('Marquee text cannot be empty!');
+                return false;
+            }
             document.getElementById("marquee-text").value = '';
             localStorage.setItem('marquee', marqueeText);
             alert('Marquee text updated!');
@@ -81,21 +116,23 @@
 
         function uploadImage() {
             const fileInput = document.getElementById("image-upload");
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("No file selected.");
+                return false;
+            }
             if (images.length >= 20) {
                 alert("Maximum of 20 images allowed.");
                 return false;
             }
 
-            const file = fileInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    images.push(e.target.result);
-                    updateImageList();
-                }
-                reader.readAsDataURL(file);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                images.push(e.target.result);
+                updateImageList();
             }
-            fileInput.value = '';
+            reader.readAsDataURL(file);
+            fileInput.value = ''; // Clear file input
             return false;
         }
 
