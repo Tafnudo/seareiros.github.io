@@ -1,29 +1,21 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin TV Seareiros</title>
+    <title>Painel de Administração - TV Indoor</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
             color: #333;
+            margin: 0;
+            padding: 20px;
         }
 
         h1 {
+            color: #4caf50;
             text-align: center;
-            color: #007bff;
-        }
-
-        .form-container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin: 0 auto;
-            max-width: 600px;
         }
 
         .form-group {
@@ -36,155 +28,109 @@
             font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="file"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        input[type="submit"] {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+        input[type="text"], input[type="file"], textarea {
             width: 100%;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-
-        .image-list {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .image-list img {
-            max-width: 100px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-
-        .marquee-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #007bff;
-            color: #fff;
             padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
         }
 
-        .marquee-text {
-            font-size: 18px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #preview img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h1>Admin Panel</h1>
-
-        <div class="marquee-container">
-            <div class="marquee-text" id="marquee-display"></div>
-            <div id="marquee-controls">
-                <form id="marquee-form" onsubmit="return updateMarquee()">
-                    <div class="form-group">
-                        <label for="marquee-text">Update Marquee Text:</label>
-                        <input type="text" id="marquee-text" placeholder="Enter new marquee text">
-                    </div>
-                    <input type="submit" value="Update Marquee">
-                </form>
-            </div>
+    <h1>Painel de Administração - TV Indoor</h1>
+    <form id="admin-form">
+        <div class="form-group">
+            <label for="aviso">Atualizar Aviso:</label>
+            <textarea id="aviso" rows="4" placeholder="Digite o novo aviso aqui..."></textarea>
         </div>
-
-        <form id="image-form" onsubmit="return uploadImage()">
-            <div class="form-group">
-                <label for="image-upload">Suba a imnagem(Max 20):</label>
-                <input type="file" id="image-upload" accept="image/*">
-            </div>
-            <input type="submit" value="Upload Image">
-        </form>
-
-        <div class="image-list" id="image-list">
-            <!-- Uploaded images will be displayed here -->
+        <div class="form-group">
+            <label for="image-upload">Upload de Imagens:</label>
+            <input type="file" id="image-upload" accept="image/*" multiple>
         </div>
+        <button type="button" id="save-btn">Salvar Alterações</button>
+    </form>
+
+    <div id="preview">
+        <h2>Pré-visualização das Imagens:</h2>
+        <div id="image-preview"></div>
     </div>
 
     <script>
-        let images = [];
+        const saveBtn = document.getElementById('save-btn');
+        const avisoField = document.getElementById('aviso');
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
 
-        function updateMarquee() {
-            const marqueeText = document.getElementById("marquee-text").value;
-            if (marqueeText.trim() === '') {
-                alert('Marquee text cannot be empty!');
-                return false;
-            }
-            document.getElementById("marquee-text").value = '';
-            localStorage.setItem('marquee', marqueeText);
-            document.getElementById("marquee-display").textContent = marqueeText;
-            alert('Marquee text updated!');
-            return false;
-        }
+        saveBtn.addEventListener('click', () => {
+            const aviso = avisoField.value;
+            const formData = new FormData();
 
-        function uploadImage() {
-            const fileInput = document.getElementById("image-upload");
-            const file = fileInput.files[0];
-            if (!file) {
-                alert("No file selected.");
-                return false;
-            }
-            if (images.length >= 20) {
-                alert("Maximum of 20 images allowed.");
-                return false;
+            // Adiciona o aviso no FormData
+            formData.append('aviso', aviso);
+
+            // Adiciona as imagens no FormData
+            for (let i = 0; i < imageUpload.files.length; i++) {
+                formData.append('images[]', imageUpload.files[i]);
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                images.push(e.target.result);
-                updateImageList();
-            }
-            reader.readAsDataURL(file);
-            fileInput.value = ''; // Clear file input
-            return false;
-        }
-
-        function updateImageList() {
-            const imageList = document.getElementById("image-list");
-            imageList.innerHTML = '';
-            images.forEach((src, index) => {
-                const imgElement = document.createElement("img");
-                imgElement.src = src;
-                imgElement.alt = `Image ${index + 1}`;
-                imageList.appendChild(imgElement);
+            // Envia o FormData via POST para o servidor
+            fetch('upload.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Alterações salvas com sucesso!');
+                } else {
+                    alert('Erro ao salvar as alterações.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar as alterações.');
             });
-            localStorage.setItem('images', JSON.stringify(images));
-        }
+        });
 
-        window.onload = function() {
-            const storedMarquee = localStorage.getItem('marquee');
-            if (storedMarquee) {
-                document.getElementById("marquee-display").textContent = storedMarquee;
-                document.getElementById("marquee-text").value = storedMarquee;
+        // Exibe pré-visualização das imagens
+        imageUpload.addEventListener('change', () => {
+            imagePreview.innerHTML = '';
+            for (let i = 0; i < imageUpload.files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    imagePreview.appendChild(img);
+                }
+                reader.readAsDataURL(imageUpload.files[i]);
             }
-
-            const storedImages = JSON.parse(localStorage.getItem('images'));
-            if (storedImages && storedImages.length > 0) {
-                images = storedImages;
-                updateImageList();
-            }
-        }
+        });
     </script>
 </body>
 </html>
