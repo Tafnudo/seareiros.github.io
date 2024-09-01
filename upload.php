@@ -1,30 +1,48 @@
 <?php
-$response = ['success' => false];
+header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Verifica e salva o aviso
-    if (isset($_POST['aviso'])) {
-        $aviso = $_POST['aviso'];
-        file_put_contents('config.json', json_encode(['aviso' => $aviso]));
+// Inicializa resposta
+$response = array('success' => false);
+
+// Verifica se o aviso foi enviado
+if (isset($_POST['aviso'])) {
+    $aviso = trim($_POST['aviso']);
+    
+    // Validação simples
+    if (!empty($aviso)) {
+        // Atualiza o arquivo config.json
+        $config = array('aviso' => $aviso);
+        if (file_put_contents('config.json', json_encode($config, JSON_PRETTY_PRINT))) {
+            $response['success'] = true;
+        } else {
+            $response['message'] = 'Falha ao atualizar o aviso.';
+        }
+    } else {
+        $response['message'] = 'O aviso não pode estar vazio.';
     }
+} else {
+    $response['message'] = 'Aviso não fornecido.';
+}
 
-    // Verifica e salva as imagens
-    if (isset($_FILES['images'])) {
-        $uploadDir = 'uploads/';
-        foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
-            $fileName = basename($_FILES['images']['name'][$key]);
-            $targetFile = $uploadDir . $fileName;
+// Lida com upload de imagens, se houver
+if (isset($_FILES['images'])) {
+    $uploadDir = 'imagens/'; // Certifique-se de que este diretório exista e tenha permissões de escrita
+    foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
+        $nomeArquivo = basename($_FILES['images']['name'][$key]);
+        $caminhoDestino = $uploadDir . $nomeArquivo;
 
-            if (move_uploaded_file($tmpName, $targetFile)) {
-                $response['success'] = true;
-            } else {
-                $response['success'] = false;
-                break;
+        // Verifica se o arquivo é uma imagem
+        $check = getimagesize($tmpName);
+        if($check !== false) {
+            // Move o arquivo para o diretório de destino
+            if (!move_uploaded_file($tmpName, $caminhoDestino)) {
+                $response['message'] = 'Falha ao fazer upload da imagem: ' . $nomeArquivo;
             }
+        } else {
+            $response['message'] = 'Arquivo não é uma imagem: ' . $nomeArquivo;
         }
     }
-
-    echo json_encode($response);
-    exit;
 }
+
+echo json_encode($response);
 ?>
