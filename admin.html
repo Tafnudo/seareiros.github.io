@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Administração - TV Indoor</title>
+
+    <!-- Link para o Dropzone.js (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css" />
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -28,7 +31,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="file"], textarea {
+        textarea {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -36,6 +39,16 @@
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
+        }
+
+        .dropzone {
+            border: 2px dashed #4caf50;
+            border-radius: 5px;
+            background: #f0f0f0;
+            padding: 20px;
+            font-size: 1rem;
+            color: #555;
+            text-align: center;
         }
 
         button {
@@ -46,7 +59,10 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
-            position: relative;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button:disabled {
@@ -58,45 +74,13 @@
             background-color: #45a049;
         }
 
-        #preview {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        #preview img {
-            max-width: 100%;
-            height: auto;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        /* Loader Styles */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4caf50;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            margin: -10px 0 0 -10px;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         /* Mensagens de Feedback */
         .message {
             margin-top: 20px;
             padding: 10px;
             border-radius: 5px;
             display: none;
+            text-align: center;
         }
 
         .message.success {
@@ -114,116 +98,88 @@
 </head>
 <body>
     <h1>Painel de Administração - TV Indoor</h1>
-    <form id="admin-form">
+    <form id="admin-form" action="upload.php" method="post" class="dropzone" enctype="multipart/form-data">
         <div class="form-group">
             <label for="aviso">Atualizar Aviso:</label>
-            <textarea id="aviso" rows="4" placeholder="Digite o novo aviso aqui..." required></textarea>
+            <textarea id="aviso" name="aviso" rows="4" placeholder="Digite o novo aviso aqui..." required></textarea>
         </div>
         <div class="form-group">
             <label for="image-upload">Upload de Imagens:</label>
-            <input type="file" id="image-upload" accept="image/*" multiple>
+            <!-- Dropzone.js usa sua própria estrutura para gerenciar uploads, então não precisa de um input de arquivo -->
         </div>
-        <button type="submit" id="save-btn">
-            Salvar Alterações
-            <div class="loader" id="loader"></div>
-        </button>
+        <button type="submit" id="save-btn">Salvar Alterações</button>
     </form>
-
-    <div id="preview">
-        <h2>Pré-visualização das Imagens:</h2>
-        <div id="image-preview"></div>
-    </div>
 
     <div class="message success" id="success-message">Alterações salvas com sucesso!</div>
     <div class="message error" id="error-message">Erro ao salvar as alterações.</div>
 
+    <!-- Script Dropzone.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
     <script>
-        const saveBtn = document.getElementById('save-btn');
-        const avisoField = document.getElementById('aviso');
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreview = document.getElementById('image-preview');
-        const loader = document.getElementById('loader');
-        const successMessage = document.getElementById('success-message');
-        const errorMessage = document.getElementById('error-message');
-        const adminForm = document.getElementById('admin-form');
+        // Configurando Dropzone
+        Dropzone.options.adminForm = {
+            paramName: 'images[]', // O nome que será usado para os arquivos no backend
+            maxFilesize: 5, // Tamanho máximo do arquivo em MB
+            acceptedFiles: 'image/*',
+            autoProcessQueue: false, // Evita que os arquivos sejam enviados automaticamente
+            uploadMultiple: true, // Permite múltiplos arquivos
+            parallelUploads: 20, // Limita o número de uploads paralelos
+            addRemoveLinks: true, // Adiciona links para remover arquivos
+            dictDefaultMessage: 'Arraste e solte as imagens aqui para fazer o upload',
+            
+            init: function() {
+                const dropzone = this;
+                const saveBtn = document.getElementById('save-btn');
+                const successMessage = document.getElementById('success-message');
+                const errorMessage = document.getElementById('error-message');
+                const avisoField = document.getElementById('aviso');
 
-        adminForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+                saveBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    successMessage.style.display = 'none';
+                    errorMessage.style.display = 'none';
 
-            // Limpar mensagens anteriores
-            successMessage.style.display = 'none';
-            errorMessage.style.display = 'none';
+                    // Adiciona o aviso ao FormData da Dropzone
+                    dropzone.options.params = { aviso: avisoField.value.trim() };
 
-            const aviso = avisoField.value.trim();
+                    if (dropzone.getQueuedFiles().length > 0) {
+                        dropzone.processQueue();
+                    } else {
+                        fetch('upload.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ aviso: avisoField.value.trim() })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                successMessage.style.display = 'block';
+                            } else {
+                                errorMessage.innerText = data.message || 'Erro ao salvar as alterações.';
+                                errorMessage.style.display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro:', error);
+                            errorMessage.style.display = 'block';
+                        });
+                    }
+                });
 
-            // Validação
-            if (aviso === "") {
-                errorMessage.innerText = "O aviso não pode estar vazio.";
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            // Exibir loader e desabilitar botão
-            loader.style.display = 'block';
-            saveBtn.disabled = true;
-
-            const formData = new FormData();
-
-            // Adiciona o aviso no FormData
-            formData.append('aviso', aviso);
-
-            // Adiciona as imagens no FormData
-            for (let i = 0; i < imageUpload.files.length; i++) {
-                formData.append('images[]', imageUpload.files[i]);
-            }
-
-            // Envia o FormData via POST para o servidor
-            fetch('upload.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                loader.style.display = 'none';
-                saveBtn.disabled = false;
-
-                if (data.success) {
+                // Quando o upload terminar com sucesso
+                dropzone.on('successmultiple', function() {
                     successMessage.style.display = 'block';
-                    adminForm.reset();
-                    imagePreview.innerHTML = '';
-                } else {
-                    errorMessage.innerText = data.message || 'Erro ao salvar as alterações.';
+                    dropzone.removeAllFiles();
+                    avisoField.value = '';
+                });
+
+                // Se ocorrer um erro durante o upload
+                dropzone.on('errormultiple', function(files, response) {
+                    console.error('Erro:', response);
                     errorMessage.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                loader.style.display = 'none';
-                saveBtn.disabled = false;
-                errorMessage.style.display = 'block';
-            });
-        });
-
-        // Exibe pré-visualização das imagens
-        imageUpload.addEventListener('change', () => {
-            imagePreview.innerHTML = '';
-            const files = imageUpload.files;
-
-            if (files.length === 0) {
-                imagePreview.innerHTML = '<p>Nenhuma imagem selecionada.</p>';
-                return;
+                });
             }
-
-            for (let i = 0; i < files.length; i++) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    imagePreview.appendChild(img);
-                }
-                reader.readAsDataURL(files[i]);
-            }
-        });
+        };
     </script>
 </body>
 </html>
