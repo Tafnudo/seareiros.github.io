@@ -20,12 +20,10 @@ if (isset($_POST['aviso'])) {
     } else {
         $response['message'] = 'O aviso não pode estar vazio.';
     }
-} else {
-    $response['message'] = 'Aviso não fornecido.';
 }
 
 // Lida com upload de imagens, se houver
-if (isset($_FILES['images'])) {
+if (!empty($_FILES['images']['name'][0])) {
     $uploadDir = 'imagens/'; // Certifique-se de que este diretório exista e tenha permissões de escrita
     foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
         $nomeArquivo = basename($_FILES['images']['name'][$key]);
@@ -35,7 +33,9 @@ if (isset($_FILES['images'])) {
         $check = getimagesize($tmpName);
         if($check !== false) {
             // Move o arquivo para o diretório de destino
-            if (!move_uploaded_file($tmpName, $caminhoDestino)) {
+            if (move_uploaded_file($tmpName, $caminhoDestino)) {
+                $response['success'] = true;
+            } else {
                 $response['message'] = 'Falha ao fazer upload da imagem: ' . $nomeArquivo;
             }
         } else {
