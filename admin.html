@@ -35,6 +35,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1rem;
+            box-sizing: border-box;
         }
 
         button {
@@ -45,9 +46,15 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
+            position: relative;
         }
 
-        button:hover {
+        button:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
             background-color: #45a049;
         }
 
@@ -59,6 +66,49 @@
         #preview img {
             max-width: 100%;
             height: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Loader Styles */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4caf50;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mensagens de Feedback */
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -67,13 +117,16 @@
     <form id="admin-form">
         <div class="form-group">
             <label for="aviso">Atualizar Aviso:</label>
-            <textarea id="aviso" rows="4" placeholder="Digite o novo aviso aqui..."></textarea>
+            <textarea id="aviso" rows="4" placeholder="Digite o novo aviso aqui..." required></textarea>
         </div>
         <div class="form-group">
             <label for="image-upload">Upload de Imagens:</label>
             <input type="file" id="image-upload" accept="image/*" multiple>
         </div>
-        <button type="button" id="save-btn">Salvar Alterações</button>
+        <button type="submit" id="save-btn">
+            Salvar Alterações
+            <div class="loader" id="loader"></div>
+        </button>
     </form>
 
     <div id="preview">
@@ -81,14 +134,39 @@
         <div id="image-preview"></div>
     </div>
 
+    <div class="message success" id="success-message">Alterações salvas com sucesso!</div>
+    <div class="message error" id="error-message">Erro ao salvar as alterações.</div>
+
     <script>
         const saveBtn = document.getElementById('save-btn');
         const avisoField = document.getElementById('aviso');
         const imageUpload = document.getElementById('image-upload');
         const imagePreview = document.getElementById('image-preview');
+        const loader = document.getElementById('loader');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const adminForm = document.getElementById('admin-form');
 
-        saveBtn.addEventListener('click', () => {
-            const aviso = avisoField.value;
+        adminForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Limpar mensagens anteriores
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            const aviso = avisoField.value.trim();
+
+            // Validação
+            if (aviso === "") {
+                errorMessage.innerText = "O aviso não pode estar vazio.";
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Exibir loader e desabilitar botão
+            loader.style.display = 'block';
+            saveBtn.disabled = true;
+
             const formData = new FormData();
 
             // Adiciona o aviso no FormData
@@ -106,29 +184,44 @@
             })
             .then(response => response.json())
             .then(data => {
+                loader.style.display = 'none';
+                saveBtn.disabled = false;
+
                 if (data.success) {
-                    alert('Alterações salvas com sucesso!');
+                    successMessage.style.display = 'block';
+                    adminForm.reset();
+                    imagePreview.innerHTML = '';
                 } else {
-                    alert('Erro ao salvar as alterações.');
+                    errorMessage.innerText = data.message || 'Erro ao salvar as alterações.';
+                    errorMessage.style.display = 'block';
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao salvar as alterações.');
+                loader.style.display = 'none';
+                saveBtn.disabled = false;
+                errorMessage.style.display = 'block';
             });
         });
 
         // Exibe pré-visualização das imagens
         imageUpload.addEventListener('change', () => {
             imagePreview.innerHTML = '';
-            for (let i = 0; i < imageUpload.files.length; i++) {
+            const files = imageUpload.files;
+
+            if (files.length === 0) {
+                imagePreview.innerHTML = '<p>Nenhuma imagem selecionada.</p>';
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     imagePreview.appendChild(img);
                 }
-                reader.readAsDataURL(imageUpload.files[i]);
+                reader.readAsDataURL(files[i]);
             }
         });
     </script>
