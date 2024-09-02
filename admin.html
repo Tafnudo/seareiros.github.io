@@ -116,25 +116,24 @@
     <!-- Script Dropzone.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
     <script>
-        // Configurando Dropzone
         Dropzone.options.adminForm = {
-            paramName: 'images[]', // O nome que será usado para os arquivos no backend
-            maxFilesize: 5, // Tamanho máximo do arquivo em MB
+            paramName: 'images[]', // Nome dos arquivos no backend
+            maxFilesize: 100, // Tamanho máximo do arquivo em MB
             acceptedFiles: 'image/*',
             autoProcessQueue: false, // Evita que os arquivos sejam enviados automaticamente
             uploadMultiple: true, // Permite múltiplos arquivos
-            parallelUploads: 20, // Limita o número de uploads paralelos
+            parallelUploads: 25, // Limita o número de uploads paralelos
             addRemoveLinks: true, // Adiciona links para remover arquivos
             dictDefaultMessage: 'Arraste e solte as imagens aqui para fazer o upload',
-            
-            init: function() {
+
+            init: function () {
                 const dropzone = this;
                 const saveBtn = document.getElementById('save-btn');
                 const successMessage = document.getElementById('success-message');
                 const errorMessage = document.getElementById('error-message');
                 const avisoField = document.getElementById('aviso');
 
-                saveBtn.addEventListener('click', function(e) {
+                saveBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     successMessage.style.display = 'none';
                     errorMessage.style.display = 'none';
@@ -150,36 +149,39 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ aviso: avisoField.value.trim() })
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                successMessage.style.display = 'block';
-                            } else {
-                                errorMessage.innerText = data.message || 'Erro ao salvar as alterações.';
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    successMessage.style.display = 'block';
+                                } else {
+                                    errorMessage.innerText = data.message || 'Erro ao salvar as alterações.';
+                                    errorMessage.style.display = 'block';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro:', error);
                                 errorMessage.style.display = 'block';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Erro:', error);
-                            errorMessage.style.display = 'block';
-                        });
+                            });
                     }
                 });
 
                 // Quando o upload terminar com sucesso
-                dropzone.on('successmultiple', function() {
-                    successMessage.style.display = 'block';
-                    dropzone.removeAllFiles();
-                    avisoField.value = '';
+                dropzone.on('successmultiple', function (files, response) {
+                    if (response.success) {
+                        successMessage.style.display = 'block';
+                        dropzone.removeAllFiles();
+                        avisoField.value = '';
+                    } else {
+                        errorMessage.innerText = response.message || 'Erro ao salvar as alterações.';
+                        errorMessage.style.display = 'block';
+                    }
                 });
 
                 // Se ocorrer um erro durante o upload
-                dropzone.on('errormultiple', function(files, response) {
+                dropzone.on('errormultiple', function (files, response) {
                     console.error('Erro:', response);
                     errorMessage.style.display = 'block';
                 });
             }
         };
     </script>
-</body>
-</html>
