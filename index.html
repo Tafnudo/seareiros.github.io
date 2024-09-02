@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Indoor - Seareiros da Boa Vontade</title>
+    <title>TV Seareiros da Boa Vontade</title>
     <style>
         body {
             margin: 0;
@@ -65,10 +65,29 @@
         }
 
         #avisos {
-            font-size: 1.5rem;
-            margin: 0 10px;
-            flex: 2 1 200px;
-            text-align: center;
+        font-size: 1.5rem;
+        margin: 0 10px;
+        flex: 2 1 200px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+        }
+
+        #avisos span {
+            display: inline-block;
+            position: absolute;
+            white-space: nowrap;
+            animation: scroll-left 10s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         #fullscreen-btn {
@@ -118,16 +137,17 @@
 </head>
 <body>
     <div id="slideshow">
+
         <!-- Certifique-se de que as imagens estão na mesma pasta ou ajuste os caminhos -->
-        <img src="imagem1.jpg" class="slide active" alt="Imagem 1">
-        <img src="imagem2.jpg" class="slide" alt="Imagem 2">
-        <img src="imagem3.jpg" class="slide" alt="Imagem 3">
+        <img src="" class="slide active" alt="Imagem 1">
+        <img src="" class="slide" alt="Imagem 2">
+        <img src="" class="slide" alt="Imagem 3">
         <!-- Adicione mais imagens conforme necessário -->
         <div id="no-images-message" style="display: none;">Nenhuma imagem disponível.</div>
     </div>
     <div id="barra-inferior">
         <div id="hora">--:--</div>
-        <div id="avisos">Carregando avisos...</div>
+        <div id="avisos"><span>Bem-vindo à TV Indoor dos Seareiros da Boa Vontade! Fique atento às atualizações.</span></div>
     </div>
     <button id="fullscreen-btn" aria-label="Ativar Tela Cheia">Tela Cheia</button>
 
